@@ -624,13 +624,14 @@ contract Autonity is IAutonity, IERC20, Upgradeable {
 
         if (epochEnded) {
             _performRedistribution();
+            // the following operations belong to the new epoch
+            lastEpochBlock = block.number;
+            epochID += 1;
+            emit NewEpoch(epochID);
             _stakingOperations();
             _applyNewCommissionRates();
             address[] memory voters = computeCommittee();
             config.contracts.oracleContract.setVoters(voters);
-            lastEpochBlock = block.number;
-            epochID += 1;
-            emit NewEpoch(epochID);
         }
 
         bool newRound = config.contracts.oracleContract.finalize();
@@ -840,6 +841,14 @@ contract Autonity is IAutonity, IERC20, Upgradeable {
     */
     function getEpochFromBlock(uint256 _block) external view virtual returns (uint256) {
         return blockEpochMap[_block];
+    }
+
+    function getHeadBondingID() external view returns (uint256) {
+        return headBondingID;
+    }
+
+    function getHeadUnbondingID() external view returns (uint256) {
+        return headUnbondingID;
     }
 
     /*
